@@ -13,6 +13,7 @@ This repository contains a computer vision-based fitness trainer that tracks and
 - **Jumping Jacks**: Counts repetitions based on arm movement (wrists above shoulders).
 - **High Knees**: Counts repetitions based on knee height relative to hip.
 - **Punches**: Counts repetitions based on arm extension (jab/cross).
+- **Dumbbell Curls**: Counts repetitions based on elbow angle for both arms.
 
 ## Project Structure
 
@@ -25,6 +26,7 @@ This repository contains a computer vision-based fitness trainer that tracks and
 - `jumping_jacks.py`: Logic for Jumping Jack detection.
 - `high_knees.py`: Logic for High Knee detection.
 - `punches.py`: Logic for Punch detection.
+- `dumbbell_curls.py`: Logic for Dumbbell Curl detection.
 - `pose_utils.py`: Utility functions (angle calculation, visibility check).
 - `demo.ipynb`: Jupyter Notebook to run and test the exercises.
 - `requirements.txt`: List of dependencies.
@@ -53,6 +55,7 @@ This repository contains a computer vision-based fitness trainer that tracks and
     - `'jumping_jack'`
     - `'high_knee'`
     - `'punch'`
+    - `'dumbbell_curl'`
 3.  Run the cells. A window named 'AI Fitness Trainer' will pop up showing your webcam feed with the overlay.
 4.  Perform the exercise. The counters/timers will update automatically.
 5.  Press `q` on your keyboard to quit the application.
