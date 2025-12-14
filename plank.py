@@ -16,32 +16,27 @@ class PlankTimer:
         """
         Processes the image and landmarks to timer for plank.
         """
+        h, w, _ = image.shape
 
         # Check for plank form: straight line from shoulder to heel.
-        # Check angle at hip (Shoulder-Hip-Knee) and angle at knee (Hip-Knee-Ankle)
-
-        l_shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-        l_hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y]
-        l_knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y]
-        l_ankle = [landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
+        l_shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y * h]
+        l_hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y * h]
+        l_knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y * h]
+        l_ankle = [landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].y * h]
 
         hip_angle = calculate_angle(l_shoulder, l_hip, l_knee)
         knee_angle = calculate_angle(l_hip, l_knee, l_ankle)
 
         # Visualize angles
-        h, w, _ = image.shape
         cv2.putText(image, f"Hip: {int(hip_angle)}",
-                           tuple(np.multiply(l_hip, [w, h]).astype(int)),
+                           tuple(np.array(l_hip).astype(int)),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         cv2.putText(image, f"Knee: {int(knee_angle)}",
-                           tuple(np.multiply(l_knee, [w, h]).astype(int)),
+                           tuple(np.array(l_knee).astype(int)),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         # Plank Logic
-        # Body straight: Hip angle approx 180 (say 170-180), Knee angle approx 180.
-        # Allow some margin.
-
         good_form = (160 < hip_angle < 190) and (160 < knee_angle < 190)
 
         if good_form:

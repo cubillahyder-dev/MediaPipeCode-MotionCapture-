@@ -13,25 +13,22 @@ class SquatDetector:
         """
         Processes the image and landmarks to count squats.
         """
+        h, w, _ = image.shape
 
         # Get coordinates for left leg
-        l_hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y]
-        l_knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y]
-        l_ankle = [landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
+        l_hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y * h]
+        l_knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y * h]
+        l_ankle = [landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].y * h]
 
         # Calculate knee angle
         angle = calculate_angle(l_hip, l_knee, l_ankle)
 
         # Visualize angle
-        h, w, _ = image.shape
         cv2.putText(image, str(int(angle)),
-                           tuple(np.multiply(l_knee, [w, h]).astype(int)),
+                           tuple(np.array(l_knee).astype(int)),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         # Squat Logic
-        # Standing up (Up): Angle > 160
-        # Squat down (Down): Angle < 90 (or similar threshold depending on depth)
-
         if angle > 160:
             if self.stage == 'down':
                 self.counter += 1

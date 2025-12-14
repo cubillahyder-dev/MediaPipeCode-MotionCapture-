@@ -16,25 +16,23 @@ class PushUpDetector:
             image: The image frame to draw on.
             landmarks: The list of pose landmarks detected by MediaPipe.
         """
+        h, w, _ = image.shape
 
         # Get coordinates for left arm
-        l_shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-        l_elbow = [landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-        l_wrist = [landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+        # Convert to pixel coordinates for accurate angle calculation
+        l_shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y * h]
+        l_elbow = [landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].y * h]
+        l_wrist = [landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].y * h]
 
         # Calculate elbow angle
         angle = calculate_angle(l_shoulder, l_elbow, l_wrist)
 
         # Visualize angle
-        h, w, _ = image.shape
         cv2.putText(image, str(int(angle)),
-                           tuple(np.multiply(l_elbow, [w, h]).astype(int)),
+                           tuple(np.array(l_elbow).astype(int)),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         # Push-up Counter Logic
-        # Elbow angle > 160 is UP
-        # Elbow angle < 90 is DOWN
-
         if angle > 160:
             if self.stage == 'down':
                 self.counter += 1

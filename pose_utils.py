@@ -3,7 +3,7 @@ import numpy as np
 def calculate_angle(a, b, c):
     """
     Calculates the angle between three points a, b, and c.
-    a, b, c are typically (x, y) coordinates or MediaPipe landmarks.
+    a, b, c are (x, y) coordinates.
     The angle is calculated at point b.
     """
     a = np.array(a) # First

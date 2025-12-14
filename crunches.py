@@ -13,32 +13,22 @@ class AbCrunchDetector:
         """
         Processes the image and landmarks to count ab crunches.
         """
+        h, w, _ = image.shape
 
         # Get coordinates for logic
-        # For crunches, we look at the angle between shoulder, hip, and knee.
-        # Or sometimes just the upper body curling.
-        # Let's use Shoulder-Hip-Knee angle.
-
-        l_shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-        l_hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y]
-        l_knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x, landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+        l_shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y * h]
+        l_hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y * h]
+        l_knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y * h]
 
         # Calculate angle at the hip
         angle = calculate_angle(l_shoulder, l_hip, l_knee)
 
         # Visualize angle
-        h, w, _ = image.shape
         cv2.putText(image, str(int(angle)),
-                           tuple(np.multiply(l_hip, [w, h]).astype(int)),
+                           tuple(np.array(l_hip).astype(int)),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         # Crunch Logic
-        # Lying flat (Down/Start): Angle > 130 or 140 (approx straight)
-        # Crunching up (Up/End): Angle < 50 or 60
-        # Wait, for crunch, "Down" is usually the start (lying on back), and "Up" is the crunch.
-        # So "Down" state corresponds to angle > 130.
-        # "Up" state corresponds to angle < 55.
-
         if angle > 130:
             self.stage = "down"
         if angle < 55 and self.stage == 'down':
