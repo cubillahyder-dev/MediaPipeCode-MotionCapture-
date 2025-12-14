@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import time
-from pose_utils import calculate_angle
+from pose_utils import calculate_angle, check_visibility
 
 class PlankTimer:
     def __init__(self):
@@ -18,11 +18,22 @@ class PlankTimer:
         """
         h, w, _ = image.shape
 
+        # Define indices
+        shoulder_idx = self.mp_pose.PoseLandmark.LEFT_SHOULDER.value
+        hip_idx = self.mp_pose.PoseLandmark.LEFT_HIP.value
+        knee_idx = self.mp_pose.PoseLandmark.LEFT_KNEE.value
+        ankle_idx = self.mp_pose.PoseLandmark.LEFT_ANKLE.value
+
+        # Check visibility
+        if not check_visibility(landmarks, [shoulder_idx, hip_idx, knee_idx, ankle_idx]):
+            self.start_time = None # Pause timer if visibility lost
+            return image
+
         # Check for plank form: straight line from shoulder to heel.
-        l_shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y * h]
-        l_hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y * h]
-        l_knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y * h]
-        l_ankle = [landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].y * h]
+        l_shoulder = [landmarks[shoulder_idx].x * w, landmarks[shoulder_idx].y * h]
+        l_hip = [landmarks[hip_idx].x * w, landmarks[hip_idx].y * h]
+        l_knee = [landmarks[knee_idx].x * w, landmarks[knee_idx].y * h]
+        l_ankle = [landmarks[ankle_idx].x * w, landmarks[ankle_idx].y * h]
 
         hip_angle = calculate_angle(l_shoulder, l_hip, l_knee)
         knee_angle = calculate_angle(l_hip, l_knee, l_ankle)

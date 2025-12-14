@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle
+from pose_utils import calculate_angle, check_visibility
 
 class SquatDetector:
     def __init__(self):
@@ -15,10 +15,19 @@ class SquatDetector:
         """
         h, w, _ = image.shape
 
+        # Define indices
+        hip_idx = self.mp_pose.PoseLandmark.LEFT_HIP.value
+        knee_idx = self.mp_pose.PoseLandmark.LEFT_KNEE.value
+        ankle_idx = self.mp_pose.PoseLandmark.LEFT_ANKLE.value
+
+        # Check visibility
+        if not check_visibility(landmarks, [hip_idx, knee_idx, ankle_idx]):
+            return image
+
         # Get coordinates for left leg
-        l_hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y * h]
-        l_knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y * h]
-        l_ankle = [landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].x * w, landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].y * h]
+        l_hip = [landmarks[hip_idx].x * w, landmarks[hip_idx].y * h]
+        l_knee = [landmarks[knee_idx].x * w, landmarks[knee_idx].y * h]
+        l_ankle = [landmarks[ankle_idx].x * w, landmarks[ankle_idx].y * h]
 
         # Calculate knee angle
         angle = calculate_angle(l_hip, l_knee, l_ankle)
@@ -29,6 +38,9 @@ class SquatDetector:
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         # Squat Logic
+        # Standing up (Up): Angle > 160
+        # Squat down (Down): Angle < 90
+
         if angle > 160:
             if self.stage == 'down':
                 self.counter += 1

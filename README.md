@@ -7,7 +7,11 @@ This repository contains a computer vision-based fitness trainer that tracks and
 - **Push-ups**: Counts repetitions based on elbow angle.
 - **Squats**: Counts repetitions based on knee angle.
 - **Ab Crunches**: Counts repetitions based on hip curl.
-- **Plank**: specific timer that runs only when proper form (straight back) is maintained.
+- **Plank**: Specific timer that runs only when proper form (straight back) is maintained.
+- **Lunges**: Counts repetitions based on knee angle.
+- **Bicep Curls**: Counts repetitions based on elbow angle.
+- **Jumping Jacks**: Counts repetitions based on arm movement (wrists above shoulders).
+- **High Knees**: Counts repetitions based on knee height relative to hip.
 
 ## Project Structure
 
@@ -15,7 +19,11 @@ This repository contains a computer vision-based fitness trainer that tracks and
 - `squats.py`: Logic for Squat detection.
 - `crunches.py`: Logic for Ab Crunch detection.
 - `plank.py`: Logic for Plank form check and timer.
-- `pose_utils.py`: Utility functions (angle calculation).
+- `lunges.py`: Logic for Lunge detection.
+- `bicep_curls.py`: Logic for Bicep Curl detection.
+- `jumping_jacks.py`: Logic for Jumping Jack detection.
+- `high_knees.py`: Logic for High Knee detection.
+- `pose_utils.py`: Utility functions (angle calculation, visibility check).
 - `demo.ipynb`: Jupyter Notebook to run and test the exercises.
 - `requirements.txt`: List of dependencies.
 
@@ -38,6 +46,10 @@ This repository contains a computer vision-based fitness trainer that tracks and
     - `'squat'`
     - `'crunch'`
     - `'plank'`
+    - `'lunge'`
+    - `'bicep_curl'`
+    - `'jumping_jack'`
+    - `'high_knee'`
 3.  Run the cells. A window named 'AI Fitness Trainer' will pop up showing your webcam feed with the overlay.
 4.  Perform the exercise. The counters/timers will update automatically.
 5.  Press `q` on your keyboard to quit the application.

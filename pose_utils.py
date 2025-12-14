@@ -17,3 +17,18 @@ def calculate_angle(a, b, c):
         angle = 360-angle
 
     return angle
+
+def check_visibility(landmarks, indices, threshold=0.5):
+    """
+    Checks if the specified landmarks have visibility above the threshold.
+    Args:
+        landmarks: List of landmarks.
+        indices: List of landmark indices to check.
+        threshold: Minimum visibility score.
+    Returns:
+        True if all specified landmarks are visible, False otherwise.
+    """
+    for index in indices:
+        if landmarks[index].visibility < threshold:
+            return False
+    return True
