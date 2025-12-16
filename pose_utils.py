@@ -32,3 +32,9 @@ def check_visibility(landmarks, indices, threshold=0.5):
         if landmarks[index].visibility < threshold:
             return False
     return True
+
+def get_landmark_coords(landmarks, landmark_idx, image_width, image_height):
+    """
+    Helper to get (x, y) coordinates of a landmark.
+    """
+    return [landmarks[landmark_idx].x * image_width, landmarks[landmark_idx].y * image_height]
