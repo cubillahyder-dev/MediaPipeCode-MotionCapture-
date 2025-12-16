@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box
+from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box, draw_info_box, is_pose_standing
 
 class ShadowBoxingDetector:
     def __init__(self):
@@ -9,9 +9,19 @@ class ShadowBoxingDetector:
         self.stage_left = None
         self.stage_right = None
         self.mp_pose = mp.solutions.pose
+        self.is_ready = False
 
     def process(self, image, landmarks):
         h, w, _ = image.shape
+
+        # Check Posture
+        if not is_pose_standing(landmarks):
+            draw_info_box(image, "Please Stand Up", color=(0,0,255))
+            self.is_ready = False
+            return image
+        else:
+            self.is_ready = True
+            draw_info_box(image, "Ready", color=(0,255,0))
 
         # Indices
         l_shoulder_idx = self.mp_pose.PoseLandmark.LEFT_SHOULDER.value
@@ -26,7 +36,7 @@ class ShadowBoxingDetector:
         r_visible = check_visibility(landmarks, [r_shoulder_idx, r_elbow_idx, r_wrist_idx])
 
         # LEFT ARM
-        if l_visible:
+        if l_visible and self.is_ready:
             l_shoulder = get_landmark_coords(landmarks, l_shoulder_idx, w, h)
             l_elbow = get_landmark_coords(landmarks, l_elbow_idx, w, h)
             l_wrist = get_landmark_coords(landmarks, l_wrist_idx, w, h)
@@ -45,7 +55,7 @@ class ShadowBoxingDetector:
                 self.counter += 1
 
         # RIGHT ARM
-        if r_visible:
+        if r_visible and self.is_ready:
             r_shoulder = get_landmark_coords(landmarks, r_shoulder_idx, w, h)
             r_elbow = get_landmark_coords(landmarks, r_elbow_idx, w, h)
             r_wrist = get_landmark_coords(landmarks, r_wrist_idx, w, h)

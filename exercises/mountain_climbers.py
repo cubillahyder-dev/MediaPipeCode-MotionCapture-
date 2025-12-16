@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box
+from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box, draw_info_box, is_pose_prone
 
 class MountainClimberDetector:
     def __init__(self):
@@ -9,9 +9,20 @@ class MountainClimberDetector:
         self.stage = None # 'left' or 'right' leg forward
         self.mp_pose = mp.solutions.pose
         self.prev_leg = None
+        self.is_ready = False
 
     def process(self, image, landmarks):
         h, w, _ = image.shape
+
+        # Check Posture - Prone
+        if not is_pose_prone(landmarks):
+            draw_info_box(image, "Please Lie Down", color=(0,0,255))
+            self.is_ready = False
+            draw_status_box(image, "MTN CLIMBERS", self.counter)
+            return image
+        else:
+            self.is_ready = True
+            draw_info_box(image, "Ready", color=(0,255,0))
 
         # We need hips and knees to detect leg movement
         # Also maybe shoulders to ensure plank position?

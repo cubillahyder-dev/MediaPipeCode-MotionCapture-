@@ -1,16 +1,30 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box
+from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box, draw_info_box, is_pose_prone
 
 class PushUpDetector:
     def __init__(self):
         self.counter = 0
         self.stage = None # "up" or "down"
         self.mp_pose = mp.solutions.pose
+        self.is_ready = False
 
     def process(self, image, landmarks):
         h, w, _ = image.shape
+
+        # Check Posture - Prone
+        # We check this if we are not in the middle of a rep (i.e. if stage is None or up)
+        # Actually in pushup, prone is maintained throughout.
+
+        if not is_pose_prone(landmarks):
+             draw_info_box(image, "Please Lie Down", color=(0,0,255))
+             self.is_ready = False
+             draw_status_box(image, "PUSH-UPS", self.counter)
+             return image
+        else:
+             self.is_ready = True
+             draw_info_box(image, "Ready", color=(0,255,0))
 
         shoulder_idx = self.mp_pose.PoseLandmark.LEFT_SHOULDER.value
         elbow_idx = self.mp_pose.PoseLandmark.LEFT_ELBOW.value

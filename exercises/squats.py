@@ -1,16 +1,51 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box
+from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box, draw_info_box, is_pose_standing
 
 class SquatDetector:
     def __init__(self):
         self.counter = 0
         self.stage = None
         self.mp_pose = mp.solutions.pose
+        self.is_ready = False
 
     def process(self, image, landmarks):
         h, w, _ = image.shape
+
+        # Check Posture - Squats are tricky because "in position" means standing, but during rep you are not "standing"
+        # However, is_pose_standing checks y-coordinates relative order (Shoulder < Hip < Knee).
+        # Even in a deep squat, your shoulders are above hips, and hips above knees (mostly, unless deep deep squat).
+        # Actually in deep squat, hips can be below knees.
+        # So strict `is_pose_standing` might fail at bottom of squat.
+        # But we only need to validat "Ready" state at the start or top.
+
+        # Let's say: If we are not recording a rep, we demand standing.
+        # If we are in the middle of a rep, we relax the check?
+        # Or simpler: The user demanded "make sure user is in position first".
+        # This implies checking before STARTING the workout or the first rep.
+
+        # Let's check standing if self.stage is None or 'up'.
+
+        check_posture = (self.stage is None) or (self.stage == 'up')
+
+        if check_posture:
+            if not is_pose_standing(landmarks):
+                draw_info_box(image, "Please Stand Up", color=(0,0,255))
+                self.is_ready = False
+                # If we are not ready, do we return? If we return, we stop processing.
+                # But we might want to continue processing to see if they stand up.
+                # But we shouldn't count.
+                draw_status_box(image, "SQUATS", self.counter)
+                return image
+            else:
+                self.is_ready = True
+                draw_info_box(image, "Ready", color=(0,255,0))
+
+        if not self.is_ready:
+            # If not ready (and not in the middle of a rep), just return
+             draw_status_box(image, "SQUATS", self.counter)
+             return image
 
         hip_idx = self.mp_pose.PoseLandmark.LEFT_HIP.value
         knee_idx = self.mp_pose.PoseLandmark.LEFT_KNEE.value

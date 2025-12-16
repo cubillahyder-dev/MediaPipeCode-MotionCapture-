@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box
+from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box, draw_info_box, is_pose_standing
 
 class BurpeeDetector:
     def __init__(self):
@@ -9,21 +9,26 @@ class BurpeeDetector:
         self.stage = "standing" # standing -> squat -> plank -> pushup (opt) -> squat -> standing
         self.mp_pose = mp.solutions.pose
         self.history = []
+        self.is_ready = False
 
     def process(self, image, landmarks):
         h, w, _ = image.shape
 
-        # Burpee is complex.
-        # 1. Standing (Vertical, hands down)
-        # 2. Squat (Hips low)
-        # 3. Plank (Horizontal)
-        # 4. Squat
-        # 5. Jump/Stand
-
-        # Key metrics:
-        # Hip Y coord relative to Shoulder Y (Verticality)
-        # Hip Angle (Squat)
-        # Shoulder-Hip-Ankle Angle (Plank)
+        # Burpee check:
+        # If we are in 'standing' stage (start), we require the user to be standing.
+        if self.stage == "standing":
+            if not is_pose_standing(landmarks):
+                draw_info_box(image, "Please Stand Up", color=(0,0,255))
+                self.is_ready = False
+                draw_status_box(image, "BURPEES", self.counter)
+                # If we are not ready at the start, we return (preventing transition to squat_down)
+                return image
+            else:
+                self.is_ready = True
+                draw_info_box(image, "Ready", color=(0,255,0))
+        else:
+            # If we are mid-rep (squat, plank, etc), we don't enforce standing check.
+            draw_info_box(image, "Go!", color=(0,255,0))
 
         l_shoulder_idx = self.mp_pose.PoseLandmark.LEFT_SHOULDER.value
         l_hip_idx = self.mp_pose.PoseLandmark.LEFT_HIP.value
@@ -43,7 +48,7 @@ class BurpeeDetector:
         shoulder_hip_knee_angle = calculate_angle(l_shoulder, l_hip, l_knee)
         shoulder_hip_ankle_angle = calculate_angle(l_shoulder, l_hip, l_ankle) # For plank
 
-        cv2.putText(image, f"Stage: {self.stage}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.putText(image, f"Stage: {self.stage}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
         # State Transitions
         if self.stage == "standing":

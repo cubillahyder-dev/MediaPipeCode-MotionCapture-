@@ -1,20 +1,28 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box
+from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box, draw_info_box, is_pose_standing
 
 class JumpingJackDetector:
     def __init__(self):
         self.counter = 0
         self.stage = None # 'close' or 'open'
         self.mp_pose = mp.solutions.pose
+        self.is_ready = False
 
     def process(self, image, landmarks):
         h, w, _ = image.shape
 
-        # Jumping jacks:
-        # Hands go above head.
-        # Legs go wide.
+        # Check Posture
+        # Jumping jacks: Always basically vertical.
+        if not is_pose_standing(landmarks):
+            draw_info_box(image, "Please Stand Up", color=(0,0,255))
+            self.is_ready = False
+            draw_status_box(image, "JUMP JACKS", self.counter)
+            return image
+        else:
+            self.is_ready = True
+            draw_info_box(image, "Ready", color=(0,255,0))
 
         l_shoulder_idx = self.mp_pose.PoseLandmark.LEFT_SHOULDER.value
         l_wrist_idx = self.mp_pose.PoseLandmark.LEFT_WRIST.value
