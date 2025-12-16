@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle, check_visibility, get_landmark_coords
+from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box
 
 class BurpeeDetector:
     def __init__(self):
@@ -72,11 +72,6 @@ class BurpeeDetector:
                 self.stage = "standing"
                 self.counter += 1
 
-        cv2.rectangle(image, (0,0), (225,73), (245,117,16), -1)
-        cv2.putText(image, 'BURPEES', (15,12),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-        cv2.putText(image, str(self.counter),
-                    (10,60),
-                    cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2, cv2.LINE_AA)
+        draw_status_box(image, "BURPEES", self.counter)
 
         return image

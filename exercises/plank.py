@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from pose_utils import calculate_angle, check_visibility, get_landmark_coords
+from pose_utils import calculate_angle, check_visibility, get_landmark_coords, draw_status_box
 import time
 
 class PlankDetector:
@@ -63,12 +63,7 @@ class PlankDetector:
             # Retain last counter or reset? Usually plank is max time.
             # Let's just show current hold time.
 
-        cv2.rectangle(image, (0,0), (225,73), (245,117,16), -1)
-        cv2.putText(image, 'PLANK TIME', (15,12),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-        cv2.putText(image, str(self.counter) + " s",
-                    (10,60),
-                    cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2, cv2.LINE_AA)
+        draw_status_box(image, "PLANK TIME", str(self.counter) + " s")
 
         cv2.putText(image, status, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
 

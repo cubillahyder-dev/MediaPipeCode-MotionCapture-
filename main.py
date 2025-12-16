@@ -56,6 +56,9 @@ def main():
             if not ret:
                 break
 
+            # Mirror the camera feed
+            frame = cv2.flip(frame, 1)
+
             # Recolor to RGB
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image.flags.writeable = False

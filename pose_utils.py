@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 
 def calculate_angle(a, b, c):
     """
@@ -38,3 +39,24 @@ def get_landmark_coords(landmarks, landmark_idx, image_width, image_height):
     Helper to get (x, y) coordinates of a landmark.
     """
     return [landmarks[landmark_idx].x * image_width, landmarks[landmark_idx].y * image_height]
+
+def draw_status_box(image, label, value, color=(245,117,16), text_color=(255,255,255)):
+    """
+    Draws a standardized status box on the top-right corner of the image.
+    """
+    h, w, _ = image.shape
+
+    # Define box dimensions
+    box_width = 225
+    box_height = 73
+
+    start_point = (w - box_width, 0)
+    end_point = (w, box_height)
+
+    cv2.rectangle(image, start_point, end_point, color, -1)
+
+    cv2.putText(image, str(label), (w - box_width + 15, 12),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+    cv2.putText(image, str(value),
+                (w - box_width + 10, 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 2, text_color, 2, cv2.LINE_AA)
